@@ -339,11 +339,9 @@
             <h2 style="margin-bottom: 20px;">Welcome Back</h2>
             <div id="authStatus"></div>
             
-            <div class="form-group">
-                <label for="apiUrl">API URL</label>
-                <input type="text" id="apiUrl" placeholder="API URL">
-                <script>document.getElementById('apiUrl').value = defaultApiUrl;</script>
-            </div>
+            <!-- Hidden API URL field (auto-detected) -->
+            <input type="hidden" id="apiUrl">
+            <script>document.getElementById('apiUrl').value = defaultApiUrl;</script>
 
             <div class="form-group">
                 <label for="email">Email</label>
@@ -446,7 +444,9 @@
             : 'https://api.youtubesummarizer.app';
         
         let token = localStorage.getItem('token') || '';
-        let apiUrl = localStorage.getItem('apiUrl') || defaultApiUrl;
+        // Always use auto-detected URL (ignore stored URL for smooth custom domain migration)
+        let apiUrl = defaultApiUrl;
+        localStorage.setItem('apiUrl', apiUrl);
         let currentTab = 'playlists';
 
         // Check if already logged in
