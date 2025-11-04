@@ -1,0 +1,17 @@
+{
+  "name": "YouTube Summarizer",
+  "short_name": "YT Summarizer",
+  "description": "AI-powered video summaries for Kindle",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#4a90e2",
+  "theme_color": "#4a90e2",
+  "icons": [
+    {
+      "src": "https://em-content.zobj.net/thumbs/240/apple/354/open-book_1f4d6.png",
+      "sizes": "240x240",
+      "type": "image/png"
+    }
+  ]
+}
+
