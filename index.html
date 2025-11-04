@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Summarizer - Web Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .login-form, .main-view {
+            display: none;
+        }
+
+        .login-form.active, .main-view.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .playlist-list {
+            margin-bottom: 30px;
+        }
+
+        .playlist-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .playlist-item:hover {
+            background: #e9ecef;
+        }
+
+        .playlist-item h3 {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .playlist-item p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .summary-list {
+            margin-top: 30px;
+        }
+
+        .summary-item {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .summary-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .summary-item .channel {
+            color: #667eea;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .summary-item .summary-text {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .summary-item .video-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .summary-item .video-link:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .config-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .config-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .user-info {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        .user-info strong {
+            color: #333;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 YouTube Summarizer</h1>
+            <p>AI-powered video summaries delivered to your Kindle</p>
+        </div>
+
+        <!-- Login/Register Card -->
+        <div class="card login-form active" id="loginCard">
+            <h2 style="margin-bottom: 20px;">Welcome Back</h2>
+            <div id="authStatus"></div>
+            
+            <div class="form-group">
+                <label for="apiUrl">API URL</label>
+                <input type="text" id="apiUrl" placeholder="API URL">
+                <script>document.getElementById('apiUrl').value = defaultApiUrl;</script>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="your@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="••••••••">
+            </div>
+
+            <button class="btn" onclick="login()">Login</button>
+            <button class="btn btn-secondary" onclick="register()">Create Account</button>
+        </div>
+
+        <!-- Main App Card -->
+        <div class="card main-view" id="mainCard">
+            <div class="user-info">
+                Logged in as <strong id="userEmail"></strong>
+                <button class="btn btn-secondary" onclick="logout()" style="margin-top: 10px;">Logout</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('playlists')">Playlists</button>
+                <button class="tab" onclick="switchTab('summaries')">Summaries</button>
+                <button class="tab" onclick="switchTab('settings')">Settings</button>
+            </div>
+
+            <!-- Playlists Tab -->
+            <div class="tab-content active" id="playlistsTab">
+                <div id="playlistStatus"></div>
+                
+                <div class="form-group">
+                    <label for="playlistUrl">Add YouTube Playlist</label>
+                    <input type="text" id="playlistUrl" placeholder="https://www.youtube.com/playlist?list=...">
+                </div>
+                <button class="btn" onclick="addPlaylist()">Add Playlist</button>
+
+                <div id="playlistList" class="playlist-list" style="margin-top: 30px;">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading playlists...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summaries Tab -->
+            <div class="tab-content" id="summariesTab">
+                <div id="summaryStatus"></div>
+                <button class="btn" onclick="loadSummaries()">Refresh Summaries</button>
+                
+                <div id="summaryList" class="summary-list">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading summaries...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div class="tab-content" id="settingsTab">
+                <div id="settingsStatus"></div>
+                
+                <h3>Kindle Delivery</h3>
+                <div class="form-group">
+                    <label for="kindleEmail">Kindle Email</label>
+                    <input type="text" id="kindleEmail" placeholder="your_kindle@kindle.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="gmailAddress">Gmail Address</label>
+                    <input type="email" id="gmailAddress" placeholder="your@gmail.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="gmailPassword">Gmail App Password</label>
+                    <input type="password" id="gmailPassword" placeholder="16-character app password">
+                </div>
+
+                <h3 style="margin-top: 30px;">Notion Integration</h3>
+                <div class="form-group">
+                    <label for="notionToken">Notion API Token</label>
+                    <input type="password" id="notionToken" placeholder="secret_...">
+                </div>
+                
+                <div class="form-group">
+                    <label for="notionDatabase">Notion Database ID</label>
+                    <input type="text" id="notionDatabase" placeholder="Database ID">
+                </div>
+
+                <button class="btn" onclick="saveSettings()">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-detect API URL based on environment
+        const defaultApiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8000'
+            : 'https://api.youtubesummarizer.app';
+        
+        let token = localStorage.getItem('token') || '';
+        let apiUrl = localStorage.getItem('apiUrl') || defaultApiUrl;
+        let currentTab = 'playlists';
+
+        // Check if already logged in
+        if (token) {
+            showMainView();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tab + 'Tab').classList.add('active');
+
+            // Load data for the tab
+            if (tab === 'playlists') loadPlaylists();
+            if (tab === 'summaries') loadSummaries();
+            if (tab === 'settings') loadSettings();
+        }
+
+        async function register() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            apiUrl = document.getElementById('apiUrl').value;
+
+            if (!email || !password) {
+                showStatus('authStatus', 'Please fill in all fields', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiUrl}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Registration failed');
+                }
+
+                showStatus('authStatus', 'Account created! Now logging in...', 'success');
+                await login();
+            } catch (error) {
+                showStatus('authStatus', error.message, 'error');
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            apiUrl = document.getElementById('apiUrl').value;
+
+            if (!email || !password) {
+                showStatus('authStatus', 'Please fill in all fields', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiUrl}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Login failed - check your credentials');
+                }
+
+                const data = await response.json();
+                token = data.access_token;
+                
+                localStorage.setItem('token', token);
+                localStorage.setItem('apiUrl', apiUrl);
+                localStorage.setItem('userEmail', email);
+
+                showMainView();
+            } catch (error) {
+                showStatus('authStatus', error.message, 'error');
+            }
+        }
+
+        function logout() {
+            token = '';
+            localStorage.clear();
+            document.getElementById('loginCard').classList.add('active');
+            document.getElementById('mainCard').classList.remove('active');
+        }
+
+        function showMainView() {
+            document.getElementById('loginCard').classList.remove('active');
+            document.getElementById('mainCard').classList.add('active');
+            document.getElementById('userEmail').textContent = localStorage.getItem('userEmail');
+            loadPlaylists();
+        }
+
+        async function loadPlaylists() {
+            const listDiv = document.getElementById('playlistList');
+            listDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading playlists...</p></div>';
+
+            try {
+                const response = await fetch(`${apiUrl}/api/playlists`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load playlists');
+
+                const playlists = await response.json();
+
+                if (playlists.length === 0) {
+                    listDiv.innerHTML = '<div class="empty-state"><h3>No playlists yet</h3><p>Add your first YouTube playlist above!</p></div>';
+                    return;
+                }
+
+                listDiv.innerHTML = playlists.map(p => `
+                    <div class="playlist-item">
+                        <h3>${p.title}</h3>
+                        <p>📺 ${p.channel_name} • ${p.last_video_count || 0} videos</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                listDiv.innerHTML = `<div class="empty-state"><h3>Error loading playlists</h3><p>${error.message}</p></div>`;
+            }
+        }
+
+        async function addPlaylist() {
+            const url = document.getElementById('playlistUrl').value;
+
+            if (!url) {
+                showStatus('playlistStatus', 'Please enter a playlist URL', 'error');
+                return;
+            }
+
+            showStatus('playlistStatus', 'Adding playlist...', 'info');
+
+            try {
+                const response = await fetch(`${apiUrl}/api/playlists`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ playlist_url: url })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to add playlist');
+                }
+
+                showStatus('playlistStatus', 'Playlist added! Videos will be processed shortly.', 'success');
+                document.getElementById('playlistUrl').value = '';
+                loadPlaylists();
+            } catch (error) {
+                showStatus('playlistStatus', error.message, 'error');
+            }
+        }
+
+        async function loadSummaries() {
+            const listDiv = document.getElementById('summaryList');
+            listDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading summaries...</p></div>';
+
+            try {
+                const response = await fetch(`${apiUrl}/api/summaries`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load summaries');
+
+                const summaries = await response.json();
+
+                if (summaries.length === 0) {
+                    listDiv.innerHTML = '<div class="empty-state"><h3>No summaries yet</h3><p>Add a playlist and wait for videos to be processed!</p></div>';
+                    return;
+                }
+
+                listDiv.innerHTML = summaries.map(s => `
+                    <div class="summary-item">
+                        <h3>${s.video.title}</h3>
+                        <div class="channel">📺 ${s.video.channel_name}</div>
+                        <div class="summary-text">${s.summary_text.substring(0, 300)}${s.summary_text.length > 300 ? '...' : ''}</div>
+                        <a href="${s.video.video_url}" target="_blank" class="video-link">Watch on YouTube →</a>
+                        ${s.sent_to_kindle ? '<span style="color: green; margin-left: 15px;">✓ Sent to Kindle</span>' : ''}
+                    </div>
+                `).join('');
+            } catch (error) {
+                listDiv.innerHTML = `<div class="empty-state"><h3>Error loading summaries</h3><p>${error.message}</p></div>`;
+            }
+        }
+
+        async function loadSettings() {
+            try {
+                const response = await fetch(`${apiUrl}/api/settings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) return;
+
+                const settings = await response.json();
+                
+                document.getElementById('kindleEmail').value = settings.kindle_emails || '';
+                document.getElementById('gmailAddress').value = settings.gmail_address || '';
+                document.getElementById('notionToken').value = settings.notion_token || '';
+                document.getElementById('notionDatabase').value = settings.notion_database_id || '';
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        async function saveSettings() {
+            const settings = {
+                kindle_emails: document.getElementById('kindleEmail').value,
+                gmail_address: document.getElementById('gmailAddress').value,
+                gmail_app_password: document.getElementById('gmailPassword').value,
+                notion_token: document.getElementById('notionToken').value,
+                notion_database_id: document.getElementById('notionDatabase').value
+            };
+
+            showStatus('settingsStatus', 'Saving settings...', 'info');
+
+            try {
+                const response = await fetch(`${apiUrl}/api/settings`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (!response.ok) throw new Error('Failed to save settings');
+
+                showStatus('settingsStatus', 'Settings saved successfully!', 'success');
+            } catch (error) {
+                showStatus('settingsStatus', error.message, 'error');
+            }
+        }
+
+        function showStatus(elementId, message, type) {
+            const statusDiv = document.getElementById(elementId);
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
+
