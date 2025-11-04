@@ -493,13 +493,13 @@
             </div>
 
             <div class="tabs">
-                <button class="tab active" onclick="switchTab('playlists')">Playlists</button>
-                <button class="tab" onclick="switchTab('summaries')">Summaries</button>
+                <button class="tab active" onclick="switchTab('summaries')">Summaries</button>
+                <button class="tab" onclick="switchTab('playlists')">Playlists</button>
                 <button class="tab" onclick="switchTab('settings')">Settings</button>
             </div>
 
             <!-- Playlists Tab -->
-            <div class="tab-content active" id="playlistsTab">
+            <div class="tab-content" id="playlistsTab">
                 <div id="playlistStatus"></div>
                 
                 <div class="form-group">
@@ -528,7 +528,7 @@
             </div>
 
             <!-- Summaries Tab -->
-            <div class="tab-content" id="summariesTab">
+            <div class="tab-content active" id="summariesTab">
                 <div id="summaryStatus"></div>
                 <button class="btn" onclick="loadSummaries()">Refresh Summaries</button>
                 
@@ -615,7 +615,7 @@
         // Always use auto-detected URL (ignore stored URL for smooth custom domain migration)
         let apiUrl = defaultApiUrl;
         localStorage.setItem('apiUrl', apiUrl);
-        let currentTab = 'playlists';
+        let currentTab = 'summaries';
 
         // Check if already logged in
         if (token) {
@@ -719,7 +719,7 @@
             document.getElementById('loginCard').classList.remove('active');
             document.getElementById('mainCard').classList.add('active');
             document.getElementById('userEmail').textContent = localStorage.getItem('userEmail');
-            loadPlaylists();
+            loadSummaries();  // Load summaries first (main use case)
         }
 
         async function loadPlaylists() {
