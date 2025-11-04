@@ -221,6 +221,16 @@
             margin-bottom: 10px;
         }
 
+        .summary-item .summary-preview,
+        .summary-item .summary-full {
+            transition: opacity 0.3s ease;
+        }
+
+        .summary-item .summary-full {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
         .summary-item .video-link {
             display: inline-block;
             color: #667eea;
@@ -618,17 +628,64 @@
                     return;
                 }
 
-                listDiv.innerHTML = summaries.map(s => `
-                    <div class="summary-item">
+                listDiv.innerHTML = summaries.map((s, index) => {
+                    const isLong = s.summary_text.length > 300;
+                    const previewText = isLong ? s.summary_text.substring(0, 300) + '...' : s.summary_text;
+                    
+                    return `
+                        <div class="summary-item" id="summary-${index}">
                         <h3>${s.video.title}</h3>
                         <div class="channel">📺 ${s.video.channel_name}</div>
-                        <div class="summary-text">${s.summary_text.substring(0, 300)}${s.summary_text.length > 300 ? '...' : ''}</div>
+                            <div class="summary-text" id="summary-text-${index}">
+                                <div class="summary-preview">${previewText}</div>
+                                <div class="summary-full" style="display: none;">${s.summary_text}</div>
+                            </div>
+                            <div style="margin-top: 15px;">
                         <a href="${s.video.video_url}" target="_blank" class="video-link">Watch on YouTube →</a>
+                                ${isLong ? `<a href="#" class="video-link" onclick="toggleSummary(${index}); return false;" id="toggle-${index}" style="margin-left: 15px;">Read full Summary →</a>` : ''}
                         ${s.sent_to_kindle ? '<span style="color: green; margin-left: 15px;">✓ Sent to Kindle</span>' : ''}
                     </div>
-                `).join('');
+                        </div>
+                    `;
+                }).join('');
             } catch (error) {
                 listDiv.innerHTML = `<div class="empty-state"><h3>Error loading summaries</h3><p>${error.message}</p></div>`;
+            }
+        }
+
+        let expandedSummary = null;
+
+        function toggleSummary(index) {
+            const summaryText = document.getElementById(`summary-text-${index}`);
+            const preview = summaryText.querySelector('.summary-preview');
+            const full = summaryText.querySelector('.summary-full');
+            const toggleLink = document.getElementById(`toggle-${index}`);
+            
+            // If clicking on already expanded summary, collapse it
+            if (expandedSummary === index) {
+                preview.style.display = 'block';
+                full.style.display = 'none';
+                toggleLink.textContent = 'Read full Summary →';
+                expandedSummary = null;
+            } else {
+                // Collapse previously expanded summary
+                if (expandedSummary !== null) {
+                    const prevSummaryText = document.getElementById(`summary-text-${expandedSummary}`);
+                    if (prevSummaryText) {
+                        prevSummaryText.querySelector('.summary-preview').style.display = 'block';
+                        prevSummaryText.querySelector('.summary-full').style.display = 'none';
+                        document.getElementById(`toggle-${expandedSummary}`).textContent = 'Read full Summary →';
+                    }
+                }
+                
+                // Expand this summary
+                preview.style.display = 'none';
+                full.style.display = 'block';
+                toggleLink.textContent = 'Collapse Summary ↑';
+                expandedSummary = index;
+                
+                // Smooth scroll to summary
+                document.getElementById(`summary-${index}`).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         }
 
