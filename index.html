@@ -266,6 +266,64 @@
             transform: scale(0.95);
         }
 
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 8px;
+            vertical-align: middle;
+            user-select: none;
+        }
+
+        .info-icon:active {
+            background: #5568d3;
+        }
+
+        .help-box {
+            display: none;
+            background: #e3f2fd;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin-top: 8px;
+            margin-bottom: 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .help-box.active {
+            display: block;
+        }
+
+        .help-box strong {
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .help-box a {
+            color: #667eea;
+            text-decoration: underline;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
         .loading {
             text-align: center;
             padding: 40px;
@@ -362,18 +420,30 @@
             <h2 style="margin-bottom: 20px;">Welcome Back</h2>
             <div id="authStatus"></div>
 
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" placeholder="your@email.com">
-            </div>
+            <form id="loginForm" onsubmit="login(); return false;" autocomplete="on">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email"
+                        autocomplete="email username"
+                        placeholder="your@email.com">
+                </div>
 
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="••••••••">
-            </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password"
+                        autocomplete="current-password"
+                        placeholder="••••••••">
+                </div>
 
-            <button class="btn" onclick="login()">Login</button>
-            <button class="btn btn-secondary" onclick="register()">Create Account</button>
+                <button type="submit" class="btn">Login</button>
+                <button type="button" class="btn btn-secondary" onclick="register()">Create Account</button>
+            </form>
         </div>
 
         <!-- Main App Card -->
@@ -394,7 +464,18 @@
                 <div id="playlistStatus"></div>
                 
                 <div class="form-group">
-                    <label for="playlistUrl">Add YouTube Playlist</label>
+                    <label for="playlistUrl">
+                        Add YouTube Playlist
+                        <span class="info-icon" onclick="toggleHelp('playlistHelp')">i</span>
+                    </label>
+                    <div id="playlistHelp" class="help-box">
+                        <strong>📋 Playlist Requirements:</strong>
+                        • Playlist must be <strong>Public</strong> or <strong>Unlisted</strong><br>
+                        • Private playlists cannot be accessed<br>
+                        • Large playlists (>100 videos) will only process new videos added after today<br>
+                        <br>
+                        <strong>💡 Tip:</strong> For best results, create a new playlist specifically for summarization!
+                    </div>
                     <input type="text" id="playlistUrl" placeholder="https://www.youtube.com/playlist?list=...">
                 </div>
                 <button class="btn" onclick="addPlaylist()">Add Playlist</button>
@@ -424,23 +505,52 @@
             <div class="tab-content" id="settingsTab">
                 <div id="settingsStatus"></div>
                 
-                <h3>Kindle Delivery</h3>
+                <h3>
+                    Kindle Delivery
+                    <span class="info-icon" onclick="toggleHelp('kindleHelp')">i</span>
+                </h3>
+                <div id="kindleHelp" class="help-box">
+                    <strong>📚 How to set up Kindle delivery:</strong>
+                    <br><br>
+                    <strong>1. Find your Kindle email:</strong><br>
+                    • Open Amazon app → Account → Content & Devices → Devices<br>
+                    • Or visit: <a href="https://www.amazon.com/hz/mycd/digital-console/devicedetails" target="_blank">amazon.com/mycd</a><br>
+                    • Your Kindle email looks like: yourname_123@kindle.com<br>
+                    <br>
+                    <strong>2. Add our email to approved senders:</strong><br>
+                    • Go to Amazon → Account → Content & Devices → Preferences<br>
+                    • Or visit: <a href="https://www.amazon.com/hz/mycd/myx#/home/settings/payment" target="_blank">amazon.com/mycd/preferences</a><br>
+                    • Find "Personal Document Settings"<br>
+                    • Add: <strong>ytkindlesummary@gmail.com</strong><br>
+                    <br>
+                    <strong>3. Enter your Kindle email below!</strong>
+                </div>
+                
                 <div class="form-group">
-                    <label for="kindleEmail">Kindle Email</label>
+                    <label for="kindleEmail">
+                        Kindle Email
+                        <span class="info-icon" onclick="toggleHelp('kindleEmailHelp')">i</span>
+                    </label>
+                    <div id="kindleEmailHelp" class="help-box">
+                        Find this in your Amazon account under "Manage Your Content and Devices" → "Devices"<br>
+                        Example: john_doe_123@kindle.com
+                    </div>
                     <input type="text" id="kindleEmail" placeholder="your_kindle@kindle.com">
                 </div>
-                
-                <div class="form-group">
-                    <label for="gmailAddress">Gmail Address</label>
-                    <input type="email" id="gmailAddress" placeholder="your@gmail.com">
-                </div>
-                
-                <div class="form-group">
-                    <label for="gmailPassword">Gmail App Password</label>
-                    <input type="password" id="gmailPassword" placeholder="16-character app password">
-                </div>
 
-                <h3 style="margin-top: 30px;">Notion Integration</h3>
+                <h3 style="margin-top: 30px;">
+                    Notion Integration (Optional)
+                    <span class="info-icon" onclick="toggleHelp('notionHelp')">i</span>
+                </h3>
+                <div id="notionHelp" class="help-box">
+                    <strong>📝 Notion Setup:</strong><br>
+                    • Go to <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a><br>
+                    • Create a new integration<br>
+                    • Copy the "Internal Integration Token"<br>
+                    • Share your database with the integration<br>
+                    • Copy the database ID from the URL
+                </div>
+                
                 <div class="form-group">
                     <label for="notionToken">Notion API Token</label>
                     <input type="password" id="notionToken" placeholder="secret_...">
@@ -776,6 +886,19 @@
             setTimeout(() => {
                 statusDiv.innerHTML = '';
             }, 5000);
+        }
+
+        function toggleHelp(helpId) {
+            const helpBox = document.getElementById(helpId);
+            if (helpBox.classList.contains('active')) {
+                helpBox.classList.remove('active');
+            } else {
+                // Close all other help boxes first
+                document.querySelectorAll('.help-box').forEach(box => {
+                    box.classList.remove('active');
+                });
+                helpBox.classList.add('active');
+            }
         }
     </script>
 </body>
