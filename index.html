@@ -407,43 +407,60 @@
             display: block;
         }
 
-        /* Buy Me a Coffee floating button */
+        /* Buy Me a Coffee section */
+        .support-section {
+            margin-top: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #FFF9E6 0%, #FFE5B4 100%);
+            border-radius: 12px;
+            border: 2px solid #FFDD00;
+            text-align: center;
+        }
+
+        .support-section h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .support-section p {
+            margin: 0 0 15px 0;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
         .coffee-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             background: #FFDD00;
             color: #000000;
-            padding: 12px 20px;
-            border-radius: 30px;
+            padding: 12px 24px;
+            border-radius: 25px;
             text-decoration: none;
             font-weight: 600;
             font-size: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             transition: all 0.3s ease;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .coffee-button:hover {
             background: #FFED4E;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .coffee-button:active {
-            transform: translateY(0);
+        .header-support {
+            font-size: 13px;
+            color: #667eea;
+            text-decoration: none;
+            margin-top: 5px;
+            display: inline-block;
         }
 
-        @media (max-width: 768px) {
-            .coffee-button {
-                bottom: 15px;
-                right: 15px;
-                padding: 10px 16px;
-                font-size: 14px;
-            }
+        .header-support:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -452,6 +469,7 @@
         <div class="header">
             <h1>📱 YouTube Summarizer</h1>
             <p>AI-powered video summaries delivered to your Kindle</p>
+            <a href="https://buymeacoffee.com/ytks" target="_blank" class="header-support">☕ Support this project</a>
         </div>
 
         <!-- Login/Register Card -->
@@ -601,6 +619,17 @@
                 </div>
 
                 <button class="btn" onclick="saveSettings()">Save Settings</button>
+
+                <!-- Support Section -->
+                <div class="support-section">
+                    <h3>☕ Enjoying YouTube Summarizer?</h3>
+                    <p>This app is free to use and runs on donations. If you find it helpful, consider buying me a coffee!<br>
+                    It helps cover server costs (~$8/month) and keeps the service running for everyone.</p>
+                    <a href="https://buymeacoffee.com/ytks" target="_blank" class="coffee-button">
+                        <span style="font-size: 20px;">☕</span>
+                        <span>Buy me a coffee</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -940,12 +969,6 @@
             }
         }
     </script>
-
-    <!-- Buy Me a Coffee floating button -->
-    <a href="https://buymeacoffee.com/ytks" target="_blank" class="coffee-button">
-        <span style="font-size: 20px;">☕</span>
-        <span>Buy me a coffee</span>
-    </a>
 </body>
 </html>
 
