@@ -406,6 +406,45 @@
         .tab-content.active {
             display: block;
         }
+
+        /* Buy Me a Coffee floating button */
+        .coffee-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #FFDD00;
+            color: #000000;
+            padding: 12px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .coffee-button:hover {
+            background: #FFED4E;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .coffee-button:active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .coffee-button {
+                bottom: 15px;
+                right: 15px;
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -901,6 +940,12 @@
             }
         }
     </script>
+
+    <!-- Buy Me a Coffee floating button -->
+    <a href="https://buymeacoffee.com/ytks" target="_blank" class="coffee-button">
+        <span style="font-size: 20px;">☕</span>
+        <span>Buy me a coffee</span>
+    </a>
 </body>
 </html>
 
