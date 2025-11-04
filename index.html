@@ -338,10 +338,6 @@
         <div class="card login-form active" id="loginCard">
             <h2 style="margin-bottom: 20px;">Welcome Back</h2>
             <div id="authStatus"></div>
-            
-            <!-- Hidden API URL field (auto-detected) -->
-            <input type="hidden" id="apiUrl">
-            <script>document.getElementById('apiUrl').value = defaultApiUrl;</script>
 
             <div class="form-group">
                 <label for="email">Email</label>
@@ -474,14 +470,16 @@
         async function register() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            apiUrl = document.getElementById('apiUrl').value;
 
             if (!email || !password) {
                 showStatus('authStatus', 'Please fill in all fields', 'error');
                 return;
             }
 
+            showStatus('authStatus', 'Creating account...', 'info');
+
             try {
+                console.log('Registering with API:', apiUrl);
                 const response = await fetch(`${apiUrl}/api/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -496,21 +494,24 @@
                 showStatus('authStatus', 'Account created! Now logging in...', 'success');
                 await login();
             } catch (error) {
-                showStatus('authStatus', error.message, 'error');
+                console.error('Registration error:', error);
+                showStatus('authStatus', error.message || 'Network error - please try again', 'error');
             }
         }
 
         async function login() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            apiUrl = document.getElementById('apiUrl').value;
 
             if (!email || !password) {
                 showStatus('authStatus', 'Please fill in all fields', 'error');
                 return;
             }
 
+            showStatus('authStatus', 'Logging in...', 'info');
+
             try {
+                console.log('Logging in with API:', apiUrl);
                 const response = await fetch(`${apiUrl}/api/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -530,7 +531,8 @@
 
                 showMainView();
             } catch (error) {
-                showStatus('authStatus', error.message, 'error');
+                console.error('Login error:', error);
+                showStatus('authStatus', error.message || 'Network error - please try again', 'error');
             }
         }
 
