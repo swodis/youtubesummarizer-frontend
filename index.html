@@ -766,6 +766,17 @@
             localStorage.setItem('darkMode', isDark);
         }
 
+        // SECURITY: HTML escape function to prevent XSS
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         // Global error handler for auth failures
         async function handleApiResponse(response) {
             if (response.status === 401 || response.status === 403) {
@@ -929,10 +940,11 @@
                     return;
                 }
 
+                // SECURITY: Escape all user-controlled data to prevent XSS
                 listDiv.innerHTML = playlists.map(p => `
                     <div class="playlist-item">
-                        <h3><a href="${p.playlist_url}" target="_blank" style="color: inherit; text-decoration: none;">${p.title}</a></h3>
-                        <p>📺 ${p.channel_name} • ${p.last_video_count || 0} videos</p>
+                        <h3><a href="${escapeHtml(p.playlist_url)}" target="_blank" style="color: inherit; text-decoration: none;">${escapeHtml(p.title)}</a></h3>
+                        <p>📺 ${escapeHtml(p.channel_name)} • ${p.last_video_count || 0} videos</p>
                     </div>
                 `).join('') + `
                     <div style="margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 8px; text-align: center; font-size: 13px; color: #666;">
@@ -940,7 +952,7 @@
                     </div>
                 `;
             } catch (error) {
-                listDiv.innerHTML = `<div class="empty-state"><h3>Error loading playlists</h3><p>${error.message}</p></div>`;
+                listDiv.innerHTML = `<div class="empty-state"><h3>Error loading playlists</h3><p>${escapeHtml(error.message)}</p></div>`;
             }
         }
 
@@ -998,20 +1010,21 @@
                     return;
                 }
 
+                // SECURITY: Escape all user-controlled data to prevent XSS
                 listDiv.innerHTML = summaries.map((s, index) => {
                     const isLong = s.summary_text.length > 300;
                     const previewText = isLong ? s.summary_text.substring(0, 300) + '...' : s.summary_text;
                     
                     return `
                         <div class="summary-item" id="summary-${index}">
-                            <h3>${s.video.title}</h3>
-                            <div class="channel">📺 ${s.video.channel_name}</div>
+                            <h3>${escapeHtml(s.video.title)}</h3>
+                            <div class="channel">📺 ${escapeHtml(s.video.channel_name)}</div>
                             <div class="summary-text" id="summary-text-${index}">
-                                <div class="summary-preview">${previewText}</div>
-                                <div class="summary-full" style="display: none;">${s.summary_text}</div>
+                                <div class="summary-preview">${escapeHtml(previewText)}</div>
+                                <div class="summary-full" style="display: none;">${escapeHtml(s.summary_text)}</div>
                             </div>
                             <div style="margin-top: 15px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                                <a href="${s.video.video_url}" target="_blank" class="icon-button" title="Watch on YouTube">
+                                <a href="${escapeHtml(s.video.video_url)}" target="_blank" class="icon-button" title="Watch on YouTube">
                                     <span style="font-size: 24px;">▶️</span>
                                 </a>
                                 ${isLong ? `<a href="#" class="icon-button" onclick="toggleSummary(${index}); return false;" id="toggle-${index}" title="Expand summary">
@@ -1023,7 +1036,7 @@
                     `;
                 }).join('');
             } catch (error) {
-                listDiv.innerHTML = `<div class="empty-state"><h3>Error loading summaries</h3><p>${error.message}</p></div>`;
+                listDiv.innerHTML = `<div class="empty-state"><h3>Error loading summaries</h3><p>${escapeHtml(error.message)}</p></div>`;
             }
         }
 
@@ -1121,7 +1134,8 @@
 
         function showStatus(elementId, message, type) {
             const statusDiv = document.getElementById(elementId);
-            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+            // SECURITY: Escape message to prevent XSS
+            statusDiv.innerHTML = `<div class="status ${type}">${escapeHtml(message)}</div>`;
             setTimeout(() => {
                 statusDiv.innerHTML = '';
             }, 5000);
