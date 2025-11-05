@@ -43,11 +43,38 @@
             box-sizing: border-box;
         }
 
+        :root {
+            /* Light mode colors */
+            --bg-gradient-start: #f5f9fc;
+            --bg-gradient-end: #e3f2fd;
+            --card-bg: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #666;
+            --border-color: #e0e0e0;
+            --input-bg: #ffffff;
+            --item-bg: #f8f9fa;
+            --item-hover: #e9ecef;
+        }
+
+        body.dark-mode {
+            /* Dark mode colors */
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+            --card-bg: #0f1419;
+            --text-primary: #e4e6eb;
+            --text-secondary: #b0b3b8;
+            --border-color: #38444d;
+            --input-bg: #1c2938;
+            --item-bg: #1c2938;
+            --item-hover: #253341;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #f5f9fc 0%, #e3f2fd 100%);
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
             min-height: 100vh;
             padding: 20px;
+            transition: background 0.3s ease;
         }
 
         .container {
@@ -57,7 +84,7 @@
 
         .header {
             text-align: center;
-            color: #2c3e50;
+            color: var(--text-primary);
             margin-bottom: 40px;
         }
 
@@ -72,11 +99,12 @@
         }
 
         .card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 20px;
             padding: 30px;
             margin-bottom: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            transition: background 0.3s ease;
         }
 
         .login-form, .main-view {
@@ -95,16 +123,18 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #333;
+            color: var(--text-primary);
         }
 
         .form-group input {
             width: 100%;
             padding: 12px 16px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid var(--border-color);
             border-radius: 10px;
             font-size: 16px;
             transition: border-color 0.3s;
+            background: var(--input-bg);
+            color: var(--text-primary);
         }
 
         .form-group input:focus {
@@ -169,7 +199,7 @@
         }
 
         .playlist-item {
-            background: #f8f9fa;
+            background: var(--item-bg);
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 10px;
@@ -178,17 +208,17 @@
         }
 
         .playlist-item:hover {
-            background: #e9ecef;
+            background: var(--item-hover);
         }
 
         .playlist-item h3 {
             font-size: 1.1em;
             margin-bottom: 5px;
-            color: #333;
+            color: var(--text-primary);
         }
 
         .playlist-item p {
-            color: #666;
+            color: var(--text-secondary);
             font-size: 0.9em;
         }
 
@@ -197,15 +227,15 @@
         }
 
         .summary-item {
-            background: #fff;
-            border: 2px solid #e0e0e0;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 15px;
         }
 
         .summary-item h3 {
-            color: #333;
+            color: var(--text-primary);
             margin-bottom: 10px;
             font-size: 1.2em;
         }
@@ -217,7 +247,7 @@
         }
 
         .summary-item .summary-text {
-            color: #555;
+            color: var(--text-secondary);
             line-height: 1.6;
             margin-bottom: 10px;
         }
@@ -462,14 +492,60 @@
         .header-support:hover {
             text-decoration: underline;
         }
+
+        /* Dark Mode Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #4a90e2;
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📱 YouTube Summarizer</h1>
+            <h1>YouTube Summarizer</h1>
             <p>AI-powered video summaries delivered to your Kindle</p>
-            <a href="https://buymeacoffee.com/ytks" target="_blank" class="header-support">☕ Support this project</a>
+            <a href="https://buymeacoffee.com/ytks" target="_blank" class="header-support">Support this project</a>
         </div>
 
         <!-- Login/Register Card -->
@@ -634,9 +710,21 @@
 
                 <button class="btn" onclick="saveSettings()">Save Settings</button>
 
+                <!-- Dark Mode Toggle -->
+                <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid var(--border-color);">
+                    <h3>Appearance</h3>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
+                        <span style="color: var(--text-primary);">Dark Mode</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Support Section -->
                 <div class="support-section">
-                    <h3>☕ Enjoying YouTube Summarizer?</h3>
+                    <h3>Enjoying YouTube Summarizer?</h3>
                     <p>This app is free to use and runs on donations. If you find it helpful, consider buying me a coffee!<br>
                     It helps cover server costs and keeps the service running for everyone.</p>
                     <a href="https://buymeacoffee.com/ytks" target="_blank" class="coffee-button">
@@ -663,6 +751,19 @@
         // Check if already logged in
         if (token) {
             showMainView();
+        }
+
+        // Dark mode initialization
+        const darkMode = localStorage.getItem('darkMode') === 'true';
+        if (darkMode) {
+            document.body.classList.add('dark-mode');
+            const toggle = document.getElementById('darkModeToggle');
+            if (toggle) toggle.checked = true;
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', isDark);
         }
 
         // Global error handler for auth failures
@@ -980,6 +1081,10 @@
                 document.getElementById('gmailAddress').value = settings.gmail_address || '';
                 document.getElementById('notionToken').value = settings.notion_token || '';
                 document.getElementById('notionDatabase').value = settings.notion_database_id || '';
+                
+                // Sync dark mode toggle
+                const darkMode = localStorage.getItem('darkMode') === 'true';
+                document.getElementById('darkModeToggle').checked = darkMode;
             } catch (error) {
                 console.error('Error loading settings:', error);
             }
