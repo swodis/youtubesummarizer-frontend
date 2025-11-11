@@ -645,7 +645,10 @@
                            style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); font-size: 16px; margin-bottom: 10px;"
                            onkeyup="searchSummaries()"
                     >
-                    <button class="btn" onclick="loadSummaries(0)">Refresh Summaries</button>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn" onclick="loadSummaries(0)">Refresh Summaries</button>
+                        <button class="btn" onclick="markAllAsRead()" style="background: #6c757d;">Mark All as Read</button>
+                    </div>
                 </div>
                 
                 <div id="summaryList" class="summary-list">
@@ -1132,6 +1135,35 @@
                 if (!response.ok) throw new Error('Failed to update read status');
 
                 // Reload summaries to show updated status and sorting
+                loadSummaries(currentPage);
+
+            } catch (error) {
+                showStatus('summaryStatus', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function markAllAsRead() {
+            if (!confirm('Mark all summaries as read? This cannot be undone.')) {
+                return;
+            }
+
+            try {
+                showStatus('summaryStatus', 'Marking all as read...', 'info');
+
+                const response = await fetch(`${apiUrl}/api/summaries/mark-all-read`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const checkedResponse = await handleApiResponse(response);
+                if (!checkedResponse) return;
+
+                if (!response.ok) throw new Error('Failed to mark all as read');
+
+                const result = await response.json();
+                showStatus('summaryStatus', `✅ ${result.message}`, 'success');
+
+                // Reload summaries to show updated status
                 loadSummaries(currentPage);
 
             } catch (error) {
