@@ -638,13 +638,28 @@
             <!-- Summaries Tab -->
             <div class="tab-content active" id="summariesTab">
                 <div id="summaryStatus"></div>
-                <button class="btn" onclick="loadSummaries()">Refresh Summaries</button>
+                
+                <!-- Search and Controls -->
+                <div style="margin-bottom: 20px;">
+                    <input type="text" id="summarySearch" placeholder="🔍 Search summaries..." 
+                           style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); font-size: 16px; margin-bottom: 10px;"
+                           onkeyup="searchSummaries()"
+                    >
+                    <button class="btn" onclick="loadSummaries(0)">Refresh Summaries</button>
+                </div>
                 
                 <div id="summaryList" class="summary-list">
                     <div class="loading">
                         <div class="spinner"></div>
                         <p>Loading summaries...</p>
                     </div>
+                </div>
+                
+                <!-- Pagination -->
+                <div id="paginationControls" style="display: none; text-align: center; margin-top: 20px;">
+                    <button class="btn" id="prevPage" onclick="previousPage()" style="margin-right: 10px;">← Previous</button>
+                    <span id="pageInfo" style="color: var(--text-secondary); margin: 0 15px;"></span>
+                    <button class="btn" id="nextPage" onclick="nextPage()">Next →</button>
                 </div>
             </div>
 
@@ -989,12 +1004,29 @@
             }
         }
 
-        async function loadSummaries() {
+        // Pagination state
+        let currentPage = 0;
+        const pageSize = 10;
+        let currentSummaries = [];
+        let currentSearch = '';
+
+        async function loadSummaries(page = 0) {
+            currentPage = page;
             const listDiv = document.getElementById('summaryList');
+            const searchTerm = document.getElementById('summarySearch').value.trim();
+            currentSearch = searchTerm;
+            
             listDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading summaries...</p></div>';
 
             try {
-                const response = await fetch(`${apiUrl}/api/summaries`, {
+                // Build query URL with pagination and search
+                const offset = page * pageSize;
+                let url = `${apiUrl}/api/summaries?limit=${pageSize}&offset=${offset}`;
+                if (searchTerm) {
+                    url += `&search=${encodeURIComponent(searchTerm)}`;
+                }
+
+                const response = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
@@ -1004,9 +1036,11 @@
                 if (!response.ok) throw new Error('Failed to load summaries');
 
                 const summaries = await response.json();
+                currentSummaries = summaries;
 
-                if (summaries.length === 0) {
+                if (summaries.length === 0 && page === 0) {
                     listDiv.innerHTML = '<div class="empty-state"><h3>No summaries yet</h3><p>Add a playlist and wait for videos to be processed!</p></div>';
+                    document.getElementById('paginationControls').style.display = 'none';
                     return;
                 }
 
@@ -1014,10 +1048,15 @@
                 listDiv.innerHTML = summaries.map((s, index) => {
                     const isLong = s.summary_text.length > 300;
                     const previewText = isLong ? s.summary_text.substring(0, 300) + '...' : s.summary_text;
+                    const readStyle = s.is_read ? 'opacity: 0.6;' : '';
+                    const readBadge = s.is_read ? '<span style="color: #888; font-size: 14px;">✓ Read</span>' : '<span style="color: #4a90e2; font-size: 14px; font-weight: bold;">● New</span>';
                     
                     return `
-                        <div class="summary-item" id="summary-${index}">
-                            <h3>${escapeHtml(s.video.title)}</h3>
+                        <div class="summary-item" id="summary-${index}" style="${readStyle}">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <h3 style="flex: 1;">${escapeHtml(s.video.title)}</h3>
+                                ${readBadge}
+                            </div>
                             <div class="channel">📺 ${escapeHtml(s.video.channel_name)}</div>
                             <div class="summary-text" id="summary-text-${index}">
                                 <div class="summary-preview">${escapeHtml(previewText)}</div>
@@ -1030,13 +1069,73 @@
                                 ${isLong ? `<a href="#" class="icon-button" onclick="toggleSummary(${index}); return false;" id="toggle-${index}" title="Expand summary">
                                     <span style="font-size: 24px;">🔽</span>
                                 </a>` : ''}
+                                <a href="#" class="icon-button" onclick="toggleRead(${s.id}, ${s.is_read}); return false;" id="read-${s.id}" title="${s.is_read ? 'Mark as unread' : 'Mark as read'}">
+                                    <span style="font-size: 24px;">${s.is_read ? '📭' : '📬'}</span>
+                                </a>
                                 ${s.sent_to_kindle ? '<span style="color: green; font-size: 20px;">✓ Kindle</span>' : ''}
                             </div>
                         </div>
                     `;
                 }).join('');
+
+                // Show/update pagination controls
+                const paginationDiv = document.getElementById('paginationControls');
+                const pageInfo = document.getElementById('pageInfo');
+                const prevBtn = document.getElementById('prevPage');
+                const nextBtn = document.getElementById('nextPage');
+
+                if (summaries.length === pageSize || page > 0) {
+                    paginationDiv.style.display = 'block';
+                    pageInfo.textContent = `Page ${page + 1}`;
+                    prevBtn.disabled = page === 0;
+                    nextBtn.disabled = summaries.length < pageSize;
+                } else {
+                    paginationDiv.style.display = 'none';
+                }
+
             } catch (error) {
                 listDiv.innerHTML = `<div class="empty-state"><h3>Error loading summaries</h3><p>${escapeHtml(error.message)}</p></div>`;
+                document.getElementById('paginationControls').style.display = 'none';
+            }
+        }
+
+        function nextPage() {
+            loadSummaries(currentPage + 1);
+        }
+
+        function previousPage() {
+            if (currentPage > 0) {
+                loadSummaries(currentPage - 1);
+            }
+        }
+
+        let searchTimeout;
+        function searchSummaries() {
+            // Debounce search (wait 500ms after user stops typing)
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                loadSummaries(0); // Reset to first page on new search
+            }, 500);
+        }
+
+        async function toggleRead(summaryId, isRead) {
+            try {
+                const endpoint = isRead ? 'mark-unread' : 'mark-read';
+                const response = await fetch(`${apiUrl}/api/summaries/${summaryId}/${endpoint}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const checkedResponse = await handleApiResponse(response);
+                if (!checkedResponse) return;
+
+                if (!response.ok) throw new Error('Failed to update read status');
+
+                // Reload summaries to show updated status and sorting
+                loadSummaries(currentPage);
+
+            } catch (error) {
+                showStatus('summaryStatus', `Error: ${error.message}`, 'error');
             }
         }
 
