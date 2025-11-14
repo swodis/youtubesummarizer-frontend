@@ -1034,11 +1034,18 @@
                 });
 
                 const checkedResponse = await handleApiResponse(response);
-                if (!checkedResponse) return; // Logged out due to auth error
+                if (!checkedResponse) {
+                    // Already logged out by handleApiResponse
+                    return;
+                }
 
-                if (!response.ok) throw new Error('Failed to load summaries');
+                // Use checkedResponse instead of response to ensure we have valid response
+                if (!checkedResponse.ok) {
+                    const errorData = await checkedResponse.json().catch(() => ({ detail: 'Failed to load summaries' }));
+                    throw new Error(errorData.detail || 'Failed to load summaries');
+                }
 
-                const summaries = await response.json();
+                const summaries = await checkedResponse.json();
                 currentSummaries = summaries;
 
                 if (summaries.length === 0 && page === 0) {
@@ -1097,8 +1104,10 @@
                 }
 
             } catch (error) {
-                listDiv.innerHTML = `<div class="empty-state"><h3>Error loading summaries</h3><p>${escapeHtml(error.message)}</p></div>`;
+                console.error('Error loading summaries:', error);
+                listDiv.innerHTML = `<div class="empty-state"><h3>Error loading summaries</h3><p>${escapeHtml(error.message)}</p><p style="font-size: 12px; color: #888; margin-top: 10px;">Check console for details</p></div>`;
                 document.getElementById('paginationControls').style.display = 'none';
+                // Don't retry automatically - prevents infinite loop
             }
         }
 
